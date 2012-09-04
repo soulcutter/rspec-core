@@ -357,7 +357,24 @@ An error occurred in an after(:all) hook.
         reporter.example_group_started(self)
 
         begin
-          run_before_all_hooks(new)
+          begin
+            run_before_all_hooks(new)
+          rescue Exception => ex
+            if fail_fast?
+              # TODO: come up with a better solution for this.
+              RSpec.configuration.reporter.message <<-EOS
+
+  An error occurred in a before(:all) hook.
+    #{ex.class}: #{ex.message}
+    occurred at #{ex.backtrace.first}
+
+        EOS
+              RSpec.wants_to_quit = true
+              return false
+            else
+              fail_filtered_examples(ex, reporter)
+            end
+          end
           result_for_this_group = run_examples(reporter)
           results_for_descendants = children.ordered.map {|child| child.run(reporter)}.all?
           result_for_this_group && results_for_descendants
