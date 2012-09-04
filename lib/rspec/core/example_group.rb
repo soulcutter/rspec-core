@@ -371,9 +371,8 @@ An error occurred in an after(:all) hook.
         EOS
               RSpec.wants_to_quit = true
               return false
-            else
-              fail_filtered_examples(ex, reporter)
             end
+            raise
           end
           result_for_this_group = run_examples(reporter)
           results_for_descendants = children.ordered.map {|child| child.run(reporter)}.all?
